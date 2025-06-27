@@ -1,8 +1,12 @@
 import * as ImagePicker from "expo-image-picker";
-import React from "react";
-import { Button, View, Alert } from "react-native";
+import React, { useState } from "react";
+import { Button, View, Alert, Image, Text, StyleSheet } from "react-native";
+import { Colors } from "../../constants/colors";
+import OutlinedButton from "../ui/OutlinedButton";
 
 const ImagePickerComponent = () => {
+	const [pickedImage, setPickedImage] = useState();
+
 	const verifyPermissions = async () => {
 		const { status } = await ImagePicker.requestCameraPermissionsAsync();
 		if (status !== "granted") {
@@ -28,8 +32,10 @@ const ImagePickerComponent = () => {
 			});
 
 			if (!result.canceled && result.assets && result.assets.length > 0) {
-				// console.log("Image URI:", result.assets[0].uri);
 				// You would typically set this URI to state here
+				// console.log("Image URI:", result.assets[0].uri);
+
+				setPickedImage(result.assets[0].uri);
 			}
 		} catch (err) {
 			console.log("Error taking image:", err);
@@ -37,11 +43,37 @@ const ImagePickerComponent = () => {
 		}
 	};
 
+	let imagePreview = <Text>No image taken yet.</Text>;
+
+	if (pickedImage) {
+		imagePreview = <Image style={styles.image} source={{ uri: pickedImage }} />;
+	}
+
 	return (
 		<View>
-			<Button title="Take Image" onPress={takeImageHandler} />
+			<View style={styles.imagePreview}>{imagePreview}</View>
+			<OutlinedButton icon={"camera"} onPress={takeImageHandler}>
+				Take Image
+			</OutlinedButton>
 		</View>
 	);
 };
 
 export default ImagePickerComponent;
+
+const styles = StyleSheet.create({
+	imagePreview: {
+		width: "100%",
+		height: 200,
+		marginVertical: 8,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: Colors.secondary100,
+		borderRadius: 4,
+	},
+
+	image: {
+		width: "100%",
+		height: "100%",
+	},
+});
