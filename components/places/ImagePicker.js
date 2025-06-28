@@ -1,10 +1,10 @@
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
-import { Button, View, Alert, Image, Text, StyleSheet } from "react-native";
+import { View, Alert, Image, Text, StyleSheet } from "react-native";
 import { Colors } from "../../constants/colors";
 import OutlinedButton from "../ui/OutlinedButton";
 
-const ImagePickerComponent = () => {
+const ImagePickerComponent = ({ onTakeImage }) => {
 	const [pickedImage, setPickedImage] = useState();
 
 	const verifyPermissions = async () => {
@@ -36,6 +36,7 @@ const ImagePickerComponent = () => {
 				// console.log("Image URI:", result.assets[0].uri);
 
 				setPickedImage(result.assets[0].uri);
+				onTakeImage(result.assets[0].uri);
 			}
 		} catch (err) {
 			console.log("Error taking image:", err);

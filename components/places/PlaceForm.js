@@ -1,14 +1,56 @@
-import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+	Alert,
+	ScrollView,
+	StyleSheet,
+	Text,
+	TextInput,
+	View,
+} from "react-native";
 import { Colors } from "../../constants/colors";
 import ImagePicker from "./ImagePicker";
+import LocationPicker from "./LocationPicker";
+import MyButton from "../ui/MyButton";
+import { Place } from "../../models/place";
 
-const PlaceForm = () => {
+const PlaceForm = ({ onCreatePlace }) => {
 	const [enteredTitle, setEnteredTitle] = useState("");
+	const [selectedImage, setSelectedImage] = useState();
+	const [pickedLocation, setPickedLocation] = useState();
 
 	function changeTitleHandler(enteredText) {
 		setEnteredTitle(enteredText);
 	}
+
+	function savePlaceHandler() {
+		// Check if required fields are empty
+		if (!enteredTitle || enteredTitle.trim().length === 0) {
+			Alert.alert("Invalid input", "Please enter a valid title");
+			return;
+		}
+
+		if (!selectedImage) {
+			Alert.alert("Invalid input", "Please select an image");
+			return;
+		}
+
+		if (!pickedLocation) {
+			Alert.alert("Invalid input", "Please select a location");
+			return;
+		}
+
+		// All validations passed - create and save the place
+		const placeData = new Place(enteredTitle, selectedImage, pickedLocation);
+		onCreatePlace(placeData);
+	}
+
+	function takeImageHandler(imageUri) {
+		setSelectedImage(imageUri);
+	}
+
+	const pickLocationHandler = useCallback((location) => {
+		setPickedLocation(location);
+	}, []);
 
 	return (
 		<ScrollView style={styles.form}>
@@ -21,7 +63,9 @@ const PlaceForm = () => {
 				/>
 			</View>
 
-			<ImagePicker />
+			<ImagePicker onTakeImage={takeImageHandler} />
+			<LocationPicker onPickLocation={pickLocationHandler} />
+			<MyButton onPress={savePlaceHandler}>Add Place</MyButton>
 		</ScrollView>
 	);
 };
