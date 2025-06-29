@@ -15,6 +15,7 @@ import { initDatabase } from "./util/database";
 import { StyleSheet, View } from "react-native";
 import { PlacesProvider } from "./context/place-context";
 import ClearButton from "./components/ui/ClearButton";
+import PlaceDetails from "./screens/PlaceDetails";
 
 const Stack = createNativeStackNavigator();
 SplashScreen.preventAutoHideAsync();
@@ -98,6 +99,13 @@ export default function App() {
 							component={Map}
 							options={{
 								title: "Pick on a Map",
+							}}
+						/>
+						<Stack.Screen
+							name="PlaceDetails"
+							component={PlaceDetails}
+							options={{
+								title: "Loading Place...",
 							}}
 						/>
 					</Stack.Navigator>

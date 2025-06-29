@@ -9,10 +9,15 @@ import MapView, { Marker } from "react-native-maps";
 import { getCurrentLocation } from "../util/location";
 import IconButton from "../components/ui/IconButton";
 
-const Map = ({ navigation }) => {
-	const [selectedLocation, setSelectedLocation] = useState(null);
+const Map = ({ navigation, route }) => {
 	const [currentLocation, setCurrentLocation] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
+
+	const initialLocation = route.params && {
+		lat: route.params.initialLat,
+		lng: route.params.initialLng,
+	};
+	const [selectedLocation, setSelectedLocation] = useState(initialLocation);
 
 	useEffect(() => {
 		const fetchLocation = async () => {
@@ -35,6 +40,9 @@ const Map = ({ navigation }) => {
 	}, [getCurrentLocation, setCurrentLocation, setIsLoading]);
 
 	function selectLocationHandler(event) {
+		if (initialLocation) {
+			return;
+		}
 		const { latitude, longitude } = event.nativeEvent.coordinate;
 		setSelectedLocation({
 			lat: latitude,
@@ -58,6 +66,10 @@ const Map = ({ navigation }) => {
 	}, [navigation, selectedLocation]);
 
 	useLayoutEffect(() => {
+		if (initialLocation) {
+			return;
+		}
+
 		navigation.setOptions({
 			headerRight: ({ tintColor }) => (
 				<IconButton
@@ -68,7 +80,7 @@ const Map = ({ navigation }) => {
 				/>
 			),
 		});
-	}, [navigation, savePickedLocationHandler]);
+	}, [navigation, savePickedLocationHandler, initialLocation]);
 
 	if (isLoading) {
 		return (
@@ -91,8 +103,10 @@ const Map = ({ navigation }) => {
 			<MapView
 				style={styles.map}
 				initialRegion={{
-					latitude: currentLocation.lat,
-					longitude: currentLocation.lng,
+					latitude: initialLocation ? initialLocation.lat : currentLocation.lat,
+					longitude: initialLocation
+						? initialLocation.lng
+						: currentLocation.lng,
 					latitudeDelta: 0.0922,
 					longitudeDelta: 0.0421,
 				}}

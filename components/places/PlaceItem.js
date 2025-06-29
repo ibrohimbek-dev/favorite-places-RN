@@ -1,6 +1,5 @@
 import React from "react";
 import { Image, Pressable, StyleSheet, View, Text } from "react-native";
-import MyButton from "../ui/MyButton";
 
 const PlaceItem = ({ place, onSelect }) => {
 	let addressText = "Address not available";
@@ -25,7 +24,7 @@ const PlaceItem = ({ place, onSelect }) => {
 
 	return (
 		<Pressable
-			onPress={onSelect}
+			onPress={onSelect.bind(this, place.id)}
 			style={({ pressed }) => [styles.item, pressed && styles.pressed]}
 		>
 			<View style={styles.imageContainer}>

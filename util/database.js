@@ -7,13 +7,13 @@ export async function initDatabase() {
 	if (!databaseInstance) {
 		databaseInstance = await SQLite.openDatabaseAsync("places.db");
 		await databaseInstance.execAsync(`
-      CREATE TABLE IF NOT EXISTS places (
-        id INTEGER PRIMARY KEY NOT NULL,
-        title TEXT NOT NULL,
-        imageUri TEXT NOT NULL,
-        address TEXT NOT NULL,
-        lat REAL NOT NULL,
-        lng REAL NOT NULL
+     CREATE TABLE IF NOT EXISTS places_new (
+      id TEXT PRIMARY KEY NOT NULL,
+      title TEXT NOT NULL,
+      imageUri TEXT NOT NULL,
+      address TEXT NOT NULL,
+      lat REAL NOT NULL,
+      lng REAL NOT NULL
       );
     `);
 	}
@@ -49,7 +49,6 @@ export async function insertPlace(place) {
 				place.location.lng,
 			]
 		);
-
 		return result;
 	} catch (error) {
 		console.error("Error inserting place:", error);
@@ -84,7 +83,6 @@ export async function fetchPlaces() {
 					typeof dp.lat !== "number" ||
 					typeof dp.lng !== "number"
 				) {
-					console.warn("Skipping invalid place data:", dp);
 					return null;
 				}
 
@@ -101,7 +99,6 @@ export async function fetchPlaces() {
 			})
 			.filter((place) => place !== null); // Remove any invalid entries
 
-		// console.log(`Successfully fetched =>`, places[0]);
 		return places;
 	} catch (error) {
 		console.error("Failed to fetch places:", error);
@@ -109,20 +106,50 @@ export async function fetchPlaces() {
 	}
 }
 
-// export async function fetchPlaceDetails(id) {
-// 	const dbPlace = await databaseInstance.getFirstAsync(
-// 		"SELECT * FROM places WHERE id = ?",
-// 		[id]
-// 	);
-// 	const place = new Place(
-// 		dbPlace.title,
-// 		dbPlace.imageUri,
-// 		{ lat: dbPlace.lat, lng: dbPlace.lng, address: dbPlace.address },
-// 		dbPlace.id
-// 	);
+export async function fetchPlaceDetails(id) {
+	try {
+		if (!databaseInstance) {
+			await initDatabase();
+		}
 
-// 	return place;
-// }
+		const dbPlace = await databaseInstance.getFirstAsync(
+			"SELECT * FROM places WHERE id = ?",
+			[id]
+		);
+
+		if (!dbPlace) {
+			// console.warn(`No place found with id: ${id}`);
+			return null;
+		}
+
+		// Parse the address if it's stored as JSON string
+		let address = dbPlace.address;
+		try {
+			const parsedAddress = JSON.parse(address);
+			if (Array.isArray(parsedAddress)) {
+				address = parsedAddress;
+			}
+		} catch (e) {
+			// If parsing fails, keep the original address
+			console.log("Address is not in JSON format, using as-is");
+		}
+
+		const place = new Place(
+			dbPlace.title,
+			dbPlace.imageUri,
+			{
+				lat: dbPlace.lat,
+				lng: dbPlace.lng,
+				address: address,
+			},
+			dbPlace.id
+		);
+		return place;
+	} catch (error) {
+		console.error("Error fetching place details:", error);
+		throw error;
+	}
+}
 
 export async function clearDatabase() {
 	try {
@@ -133,7 +160,6 @@ export async function clearDatabase() {
 		await databaseInstance.execAsync(`
       DELETE FROM places;
     `);
-		console.log("All data deleted successfully");
 		return true;
 	} catch (error) {
 		console.error("Error clearing database:", error);

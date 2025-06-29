@@ -10,7 +10,6 @@ const AllPlaces = ({ route }) => {
 	const [loadedPlaces, setLoadedPlaces] = useState([]);
 
 	useEffect(() => {
-		console.log("AllPlaces");
 		async function loadPlaces() {
 			const places = await fetchPlaces();
 			setLoadedPlaces(places);
